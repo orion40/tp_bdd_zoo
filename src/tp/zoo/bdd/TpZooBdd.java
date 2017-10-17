@@ -94,11 +94,15 @@ public class TpZooBdd {
     // --------------------------------------------- //
     // -------- AJOUTER UN NOUVEL ANNIMAL ---------- //
     public static void ajouterNouvelAnimal(){
-        // demander caracs nomA, sexe, type an, fonction cage, pays, anNais, noCage, nb maladies
-        // 5 strings, 1 int (4), 1 int(3) non null, int (3),
+        PreparedStatement pstmt = null;
+        ResultSet result = null;
+        boolean isEmpty = true;
+        
         String nom_a, sexe, type_an, fonction_cage, pays;
         ArrayList<String> cages_compatibles;
         int no_cage, nb_maladies, an_nais, cage_choisie;
+        
+        /*
         nom_a = obtenirChaine("le nom de l'animal");
         sexe = obtenirChaine("le sexe de l'animal");
         type_an = obtenirChaine("le type d'animaux");
@@ -107,16 +111,43 @@ public class TpZooBdd {
         //no_cage = obtenirInt("le numero de la cage");
         nb_maladies = obtenirInt("le nombre de maladies");
         an_nais = obtenirInt("l'annee de naissance");
+        */
         
-        if (!afficherCageCompatibles(fonction_cage)){
+        // a supp :
+         nom_a = "Bob";
+        sexe = "male";
+        type_an = "hélicopter";
+        fonction_cage = "fauve";
+        pays = "Bwi";
+        nb_maladies = 666;
+        an_nais = 1915;
+        
+        if (afficherCageCompatibles(fonction_cage)){
             System.out.println("Aucune cage compatible.");
             return;
         }
         
         cage_choisie = obtenirInt("le num de la cage choisie");
-                
-        // permettre de choisir cage ou il sera loge
-        choisirCageParmisListe(cage_choisie);
+          
+        try{
+            pstmt = conn.prepareStatement("INSERT INTO LesAnimaux VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            pstmt.setString(1, nom_a);
+            pstmt.setString(2, sexe);
+            pstmt.setString(3, type_an);
+            pstmt.setString(4, fonction_cage);
+            pstmt.setString(5, pays);
+            pstmt.setInt(6, an_nais);
+            pstmt.setInt(7, cage_choisie);
+            pstmt.setInt(8, nb_maladies);
+            result = pstmt.executeQuery();
+            
+        }catch (SQLException e){
+            System.out.println("Erreur à la préparation du statement.");
+            afficherException(e);
+        }
+        
+        System.out.println("Animal ajouté avec succès.");
+        //TODO: prendre en compte les echecs (anné inférieure à 1900, sexe != normal ....
     }
     
     
@@ -132,7 +163,6 @@ public class TpZooBdd {
             
             System.out.println("noCage\tfonction\tnoAlle");
             while (result.next()){
-                System.out.println("");
                 System.out.print((result.getInt(1)) + "\t");
                 System.out.print(result.getString(2) + "\t");
                 System.out.print(result.getInt(3) + "\t");
@@ -146,12 +176,6 @@ public class TpZooBdd {
         }
         return isEmpty;
     }
-    
-    private static String choisirCageParmisListe(int cages_compatibles){
-        
-        return null;
-    }
-    
     
     
     // -------------------------------------------- //
@@ -219,7 +243,7 @@ public class TpZooBdd {
             while(!quitter){
                 System.out.println("=============================");
                 System.out.println("============ MENU ===========");
-                System.out.println("1 : Quitter");
+                System.out.println("1 : Quitter et sauvegarder");
                 System.out.println("2 : Changer fonction cage");
                 System.out.println("3 : Ajouter nouvel animal");
                 System.out.println("4 : Afficher les cages");
