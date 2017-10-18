@@ -229,9 +229,6 @@ public class TpZooBdd {
     }
 
 
-
-
-
     // --------------------------------------------- //
     // ----------------- AUTRES -------------------- //
     private static void afficherException(SQLException e){
