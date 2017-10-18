@@ -157,12 +157,15 @@ public class TpZooBdd {
                 pstmt.setInt(8, nb_maladies);
                 result = pstmt.executeQuery();
 
+                System.out.println("Animal ajouté avec succès.");
+
             }catch (SQLException e){
                 System.out.println("Erreur à la préparation du statement.");
                 afficherException(e);
+            }catch (SQLIntegrityConstraintViolationException e){
+                System.out.println("Erreur à l'ajout : l'animal doit être né après 1900 inclus et ne peut être que de sexe male, femelle ou hermaphrodite.");
             }
 
-            System.out.println("Animal ajouté avec succès.");
             //TODO: prendre en compte les echecs (anné inférieure à 1900, sexe != normal ....
         }
     }
@@ -384,9 +387,7 @@ public class TpZooBdd {
             // traitement d'exception
         } catch (SQLException e) {
             afficherException(e);
-        }
-
-        finally {
+        } finally {
             try {
                 if (conn != null) conn.close ();
             }
