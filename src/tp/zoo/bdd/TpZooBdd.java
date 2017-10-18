@@ -6,6 +6,7 @@
 package tp.zoo.bdd;
 
 import java.sql.*;
+import static java.sql.Connection.*;
 import java.util.ArrayList;
 
 public class TpZooBdd {
@@ -38,7 +39,6 @@ public class TpZooBdd {
             }
             
             if(noCageResultat != -1){
-                result = null;
                 // Récupération fonction cage
                 String fonction = obtenirChaine("la nouvelle fonction de la cage");
                 // Application des changements
@@ -46,14 +46,9 @@ public class TpZooBdd {
                 pstmt.setString(1, fonction);
                 pstmt.setInt(2, noCageResultat);
                 
-                result = pstmt.executeQuery();
+                pstmt.executeUpdate();
                 
-                if( result != null ){ // l'update ce passe bien
-                    System.out.println("La cage "+noCageChoisi+" a pour nouvelle fonction " + fonction);
-                }
-                else{
-                    System.out.println(" La requete s'est mal passé. Rien n'a été modifié.");
-                }
+                System.out.println("La cage "+noCageChoisi+" a pour nouvelle fonction " + fonction);
             }
             else{
                 System.out.println(" La cage n'existe pas !");
@@ -191,7 +186,7 @@ public class TpZooBdd {
     // -------------------------------------------- //
     // -------- DEPLACER NOUVEL ANNIMAL ---------- //
     public static void deplacerAnimalVersCage(){
-        String nomA = obtenirChaine("Quel animal a déplacer");
+        String nomA = obtenirChaine("l'animal a déplacer");
         String fonction = null;
         PreparedStatement pstmt = null;
         ResultSet result = null;
@@ -227,11 +222,14 @@ public class TpZooBdd {
             }
             else{
                 // Mise à jour de la cage de l'annimal
-                noCage = obtenirInt("Dans quel cage déplacer l'animal ?");
+                noCage = obtenirInt("la cage ou déplacer l'animal ?");
                 pstmt = conn.prepareStatement("UPDATE LesAnimaux SET noCage = ? WHERE nomA = ?");
                 pstmt.setInt(1, noCage);
                 pstmt.setString(2, nomA);
-                result = pstmt.executeQuery();
+                pstmt.executeUpdate();
+                
+                
+                System.out.println("Animal déplacé avec succès.");
             }
             
         }catch (SQLException e){
@@ -333,7 +331,6 @@ public class TpZooBdd {
     public static void main(String args[]) {
         
         try {
-            
             // Enregistrement du driver Oracle
             System.out.print("Loading Oracle driver... ");
             DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
@@ -343,6 +340,9 @@ public class TpZooBdd {
             System.out.print("Connecting to the database... ");
             conn = DriverManager.getConnection(CONN_URL,USER,PASSWD);
             System.out.println("connected");
+            
+            conn.setTransactionIsolation(TRANSACTION_SERIALIZABLE);
+            System.out.println("Connexion level : "+conn.getTransactionIsolation());
             
             // Desactivation de l'autocommit
             conn.setAutoCommit(false);
@@ -399,6 +399,15 @@ public class TpZooBdd {
             // traitement d'exception
         } catch (SQLException e) {
             afficherException(e);
+        }
+        
+        finally {
+            try {
+                if (conn != null) conn.close ();
+            }
+            catch (SQLException e) {
+                e.printStackTrace ();
+            }
         }
     }
 }
