@@ -1,8 +1,8 @@
 /*
-* To change this license header, choose License Headers in Project Properties.
-* To change this template file, choose Tools | Templates
-* and open the template in the editor.
-*/
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package tp.zoo.bdd;
 
 import java.sql.*;
@@ -10,17 +10,14 @@ import static java.sql.Connection.*;
 import java.util.ArrayList;
 
 public class TpZooBdd {
-    
+
     static final String CONN_URL = "jdbc:oracle:thin:@im2ag-oracle.e.ujf-grenoble.fr:1521:im2ag";
-    
+
     static final String USER = "bozond";
     static final String PASSWD = "123456789";
-    
+
     static Connection conn;
-    
-    
-    
-    
+
     // --------------------------------------------- //
     // ---------- CHANGER FONCTION CAGE ------------ //
     public static void changerFonctionCage(){
@@ -28,16 +25,16 @@ public class TpZooBdd {
         int noCageResultat = -1;
         PreparedStatement pstmt = null;
         ResultSet result = null;
-        
+
         try{
             pstmt = conn.prepareStatement("SELECT noCage from LesCages where noCage = ?");
             pstmt.setInt(1, noCageChoisi);
-            
+
             result = pstmt.executeQuery();
             while (result.next()){
                 noCageResultat = result.getInt(1);
             }
-            
+
             if(noCageResultat != -1){
                 // Récupération fonction cage
                 String fonction = obtenirChaine("la nouvelle fonction de la cage");
@@ -45,30 +42,30 @@ public class TpZooBdd {
                 pstmt = conn.prepareStatement("UPDATE LesCages SET fonction = ? WHERE noCage = ?");
                 pstmt.setString(1, fonction);
                 pstmt.setInt(2, noCageResultat);
-                
+
                 pstmt.executeUpdate();
-                
+
                 System.out.println("La cage "+noCageChoisi+" a pour nouvelle fonction " + fonction);
             }
             else{
                 System.out.println(" La cage n'existe pas !");
             }
-            
+
         }catch (SQLException e){
             System.out.println("Erreur à la préparation du statement.");
             afficherException(e);
         }
     }
-    
-    
+
+
     public static void afficherCages(){
         PreparedStatement pstmt = null;
         ResultSet result = null;
-        
+
         try{
             pstmt = conn.prepareStatement("SELECT * from LesCages");
             result = pstmt.executeQuery();
-            
+
             System.out.println("noCage\tfonction\tnoAlle");
             while (result.next()){
                 System.out.println("");
@@ -77,32 +74,21 @@ public class TpZooBdd {
                 System.out.print(result.getInt(3) + "\t");
             }
             System.out.println("\n");
-            
+
         }catch (SQLException e){
             System.out.println("Erreur à la préparation du statement.");
             afficherException(e);
         }
     }
-    
+
     private static void afficherAnimaux() {
         PreparedStatement pstmt = null;
         ResultSet result = null;
-        
-        /*
-        nomA varchar2(20),
-        sexe varchar2(13),
-        type_an varchar2(15),
-        fonction_cage varchar2(20),
-        pays varchar2(20),
-        anNais number(4),
-        noCage number(3) not null,
-        nb_maladies number(3),
-        */
-        
+
         try{
             pstmt = conn.prepareStatement("SELECT * FROM LesAnimaux");
             result = pstmt.executeQuery();
-            
+
             System.out.println("nomA\tsexe\ttype_an\tfonction_cage\tpays\tanNais\tnoCage\tnb_maladies");
             while (result.next()){
                 System.out.println("");
@@ -116,35 +102,35 @@ public class TpZooBdd {
                 System.out.print(result.getInt(8) + "\t");
             }
             System.out.println("\n");
-            
+
         }catch (SQLException e){
             System.out.println("Erreur à la préparation du statement.");
             afficherException(e);
         }
     }
-    
+
     // --------------------------------------------- //
     // -------- AJOUTER UN NOUVEL ANNIMAL ---------- //
     public static void ajouterNouvelAnimal(){
         PreparedStatement pstmt = null;
         ResultSet result = null;
         boolean isEmpty = true;
-        
+
         String nom_a, sexe, type_an, fonction_cage, pays;
         ArrayList<String> cages_compatibles;
         int no_cage, nb_maladies, an_nais, cage_choisie;
-        
+
         /*
-        nom_a = obtenirChaine("le nom de l'animal");
-        sexe = obtenirChaine("le sexe de l'animal");
-        type_an = obtenirChaine("le type d'animaux");
-        fonction_cage = obtenirChaine("la fonction de la cage");
-        pays = obtenirChaine("le pays de l'animal");
+           nom_a = obtenirChaine("le nom de l'animal");
+           sexe = obtenirChaine("le sexe de l'animal");
+           type_an = obtenirChaine("le type d'animaux");
+           fonction_cage = obtenirChaine("la fonction de la cage");
+           pays = obtenirChaine("le pays de l'animal");
         //no_cage = obtenirInt("le numero de la cage");
         nb_maladies = obtenirInt("le nombre de maladies");
         an_nais = obtenirInt("l'annee de naissance");
         */
-        
+
         // a supp :
         nom_a = "Bob";
         sexe = "male";
@@ -153,13 +139,12 @@ public class TpZooBdd {
         pays = "Bwi";
         nb_maladies = 666;
         an_nais = 1915;
-        
+
         if (afficherCageCompatibles(fonction_cage)){
             System.out.println("Aucune cage compatible.");
-        }
-        else{
+        }else{
             cage_choisie = obtenirInt("le num de la cage choisie");
-            
+
             try{
                 pstmt = conn.prepareStatement("INSERT INTO LesAnimaux VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
                 pstmt.setString(1, nom_a);
@@ -171,18 +156,18 @@ public class TpZooBdd {
                 pstmt.setInt(7, cage_choisie);
                 pstmt.setInt(8, nb_maladies);
                 result = pstmt.executeQuery();
-                
+
             }catch (SQLException e){
                 System.out.println("Erreur à la préparation du statement.");
                 afficherException(e);
             }
-            
+
             System.out.println("Animal ajouté avec succès.");
             //TODO: prendre en compte les echecs (anné inférieure à 1900, sexe != normal ....
         }
     }
-    
-    
+
+
     // -------------------------------------------- //
     // -------- DEPLACER NOUVEL ANNIMAL ---------- //
     public static void deplacerAnimalVersCage(){
@@ -192,7 +177,7 @@ public class TpZooBdd {
         ResultSet result = null;
         int noCage = 0;
         boolean isEmpty = true;
-        
+
         try{
             // Récupération numéro et fonction de la cage occupé par l'annimal
             pstmt = conn.prepareStatement("SELECT noCage, fonction_cage FROM LesAnimaux WHERE nomA = ?");
@@ -201,7 +186,7 @@ public class TpZooBdd {
             result.next();
             noCage = result.getInt(1);
             fonction = result.getString(2);
-            
+
             // Récupération des cage compatible avec l'annimal
             pstmt = conn.prepareStatement("SELECT * FROM LesCages WHERE fonction = ? AND noCage != ?");
             pstmt.setString(1, fonction);
@@ -215,8 +200,8 @@ public class TpZooBdd {
                 isEmpty = false;
             }
             System.out.println("\n");
-            
-            
+
+
             if(isEmpty){
                 System.out.println("Déplacement impossible, pas de cage correspondante");
             }
@@ -227,21 +212,21 @@ public class TpZooBdd {
                 pstmt.setInt(1, noCage);
                 pstmt.setString(2, nomA);
                 pstmt.executeUpdate();
-                
-                
+
+
                 System.out.println("Animal déplacé avec succès.");
             }
-            
+
         }catch (SQLException e){
             System.out.println("Erreur à la préparation du statement.");
             afficherException(e);
         }
     }
-    
-    
-    
-    
-    
+
+
+
+
+
     // --------------------------------------------- //
     // ----------------- AUTRES -------------------- //
     private static void afficherException(SQLException e){
@@ -253,20 +238,20 @@ public class TpZooBdd {
         System.out.println("Affichage du code d'erreur");
         System.out.println(e.getErrorCode());
     }
-    
+
     private static String obtenirChaine(String param_name){
         System.out.print("Veuillez entrez " + param_name + " :");
         System.out.flush();
         String s = LectureClavier.lireChaine();
         return s;
     }
-    
+
     private static int obtenirInt(String param_name){
         System.out.flush();
         int i = LectureClavier.lireEntier("Veuillez entrez " + param_name + " :");
         return i;
     }
-    
+
     private static void menuAffichage(){
         boolean quitter = false;
         int choix = 0;
@@ -277,9 +262,9 @@ public class TpZooBdd {
             System.out.println("2 : Afficher les animaux ");
             System.out.println("99 : Quitter ce menu");
             System.out.println("=============================");
-            
+
             choix = obtenirInt("le choix du menu");
-            
+
             switch(choix){
                 case 1:
                     afficherCages();
@@ -296,18 +281,18 @@ public class TpZooBdd {
             }
         }
     }
-    
-    
+
+
     private static boolean afficherCageCompatibles(String fonction){
         PreparedStatement pstmt = null;
         ResultSet result = null;
         boolean isEmpty = true;
-        
+
         try{
             pstmt = conn.prepareStatement("SELECT * from LesCages WHERE fonction = ?");
             pstmt.setString(1, fonction);
             result = pstmt.executeQuery();
-            
+
             System.out.println("noCage\tfonction\tnoAlle");
             while (result.next()){
                 System.out.print((result.getInt(1)) + "\t");
@@ -316,41 +301,41 @@ public class TpZooBdd {
                 isEmpty = false;
             }
             System.out.println("\n");
-            
+
         }catch (SQLException e){
             System.out.println("Erreur à la préparation du statement.");
             afficherException(e);
         }
         return isEmpty;
     }
-    
-    
-    
+
+
+
     // --------------------------------------------- //
     // ------------------- MAIN -------------------- //
     public static void main(String args[]) {
-        
+
         try {
             // Enregistrement du driver Oracle
             System.out.print("Loading Oracle driver... ");
             DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
             System.out.println("loaded");
-            
+
             // Etablissement de la connection
             System.out.print("Connecting to the database... ");
             conn = DriverManager.getConnection(CONN_URL,USER,PASSWD);
             System.out.println("connected");
-            
+
             conn.setTransactionIsolation(TRANSACTION_SERIALIZABLE);
             System.out.println("Connexion level : "+conn.getTransactionIsolation());
-            
+
             // Desactivation de l'autocommit
             conn.setAutoCommit(false);
             System.out.println("Autocommit disabled");
-            
+
             // code métier de la fonctionnalité
             // 1.1
-            
+
             boolean quitter = false;
             while(!quitter){
                 System.out.println("=============================");
@@ -378,7 +363,7 @@ public class TpZooBdd {
                         deplacerAnimalVersCage();
                         break;
                     case 5:
-                        
+
                         break;
                     case 99:
                         quitter = true;
@@ -387,20 +372,20 @@ public class TpZooBdd {
                         System.out.println("Numéro inexistant !");
                         break;
                 }
-                
+
             }
-            
+
             // Liberation des ressources et fermeture de la connexion...
             // A COMPLETER
             conn.close();
-            
+
             System.out.println("bye.");
-            
+
             // traitement d'exception
         } catch (SQLException e) {
             afficherException(e);
         }
-        
+
         finally {
             try {
                 if (conn != null) conn.close ();
