@@ -162,8 +162,9 @@ public class TpZooBdd {
             }catch (SQLException e){
                 System.out.println("Erreur à la préparation du statement.");
                 afficherException(e);
-            }catch (SQLIntegrityConstraintViolationException e){
-                System.out.println("Erreur à l'ajout : l'animal doit être né après 1900 inclus et ne peut être que de sexe male, femelle ou hermaphrodite.");
+                if (e == instanceof(SQLIntegrityConstraintViolationException){
+                    System.out.println("Erreur à l'ajout : l'animal doit être né après 1900 inclus et ne peut être que de sexe male, femelle ou hermaphrodite.");
+                }
             }
 
             //TODO: prendre en compte les echecs (anné inférieure à 1900, sexe != normal ....
