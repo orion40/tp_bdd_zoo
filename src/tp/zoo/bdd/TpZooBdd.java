@@ -14,7 +14,7 @@ public class TpZooBdd {
     static final String CONN_URL = "jdbc:oracle:thin:@im2ag-oracle.e.ujf-grenoble.fr:1521:im2ag";
 
     static final String USER = "bozond";
-    static final String PASSWD = "123456789";
+    static final String PASSWD = "123";
 
     static Connection conn;
 
@@ -25,10 +25,6 @@ public class TpZooBdd {
         int noCageResultat = -1;
         PreparedStatement pstmt = null;
         ResultSet result = null;
-
-        //TODO : assurer l'isolation (il ne faut pas que les cages changent entre la lecture et la modif
-        // est-ce que c'est juste avec sérialisable ? donc il faudrait commit à la fin de la fonction ?
-        // ou est-ce qu'il faut utiliser une fonction du sgbd ?
 
         try{
             pstmt = conn.prepareStatement("SELECT noCage from LesCages where noCage = ?");
@@ -49,10 +45,13 @@ public class TpZooBdd {
 
                 pstmt.executeUpdate();
 
+                conn.commit();
+
                 System.out.println("La cage "+noCageChoisi+" a pour nouvelle fonction " + fonction);
             }
             else{
                 System.out.println(" La cage n'existe pas !");
+                pstmt.cancel();
             }
 
         }catch (SQLException e){
@@ -161,6 +160,8 @@ public class TpZooBdd {
                 pstmt.setInt(8, nb_maladies);
                 result = pstmt.executeQuery();
 
+                conn.commit();
+
                 System.out.println("Animal ajouté avec succès.");
 
             }catch (SQLException e){
@@ -211,6 +212,7 @@ public class TpZooBdd {
 
             if(isEmpty){
                 System.out.println("Déplacement impossible, pas de cage correspondante");
+                pstmt.cancel();
             }
             else{
                 // Mise à jour de la cage de l'annimal
@@ -220,6 +222,7 @@ public class TpZooBdd {
                 pstmt.setString(2, nomA);
                 pstmt.executeUpdate();
 
+                conn.commit();
 
                 System.out.println("Animal déplacé avec succès.");
             }
@@ -330,7 +333,6 @@ public class TpZooBdd {
             conn = DriverManager.getConnection(CONN_URL,USER,PASSWD);
             System.out.println("connected");
 
-            conn.setTransactionIsolation(TRANSACTION_SERIALIZABLE);
             System.out.println("Connexion level : "+conn.getTransactionIsolation());
 
             // Desactivation de l'autocommit
@@ -348,17 +350,20 @@ public class TpZooBdd {
                 System.out.println("2 : Changer fonction cage");
                 System.out.println("3 : Ajouter nouvel animal");
                 System.out.println("4 : Déplacer animal");
-                System.out.println("5 : ? ");
-                System.out.println("99 : Quitter et sauvegarder");
+                System.out.println("99 : Quitter");
                 System.out.println("=============================");
                 int monChoix = obtenirInt("le choix du menu");
+
+                // Chaque transaction sera sérialisable
+                conn.setTransactionIsolation(TRANSACTION_SERIALIZABLE);
+
                 switch(monChoix){
                     case 1:
                         menuAffichage();
                         break;
                     case 2:
-                        changerFonctionCage();
                         afficherCages();
+                        changerFonctionCage();
                         break;
                     case 3:
                         ajouterNouvelAnimal();
