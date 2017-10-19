@@ -26,6 +26,10 @@ public class TpZooBdd {
         PreparedStatement pstmt = null;
         ResultSet result = null;
 
+        //TODO : assurer l'isolation (il ne faut pas que les cages changent entre la lecture et la modif
+        // est-ce que c'est juste avec sérialisable ? donc il faudrait commit à la fin de la fonction ?
+        // ou est-ce qu'il faut utiliser une fonction du sgbd ?
+
         try{
             pstmt = conn.prepareStatement("SELECT noCage from LesCages where noCage = ?");
             pstmt.setInt(1, noCageChoisi);
@@ -167,8 +171,6 @@ public class TpZooBdd {
                     afficherException(e);
                 }
             }
-
-            //TODO: prendre en compte les echecs (anné inférieure à 1900, sexe != normal ....
         }
     }
 
