@@ -72,6 +72,19 @@ create table LesHistoiresAff (
 	constraint LesHistoiresAff_C1 primary key (dateFin, noCage, nomE)
 );
 
+-- TODO: inc/dec les maladies de chaque animal à chaque modif
+-- TODO: Vérifier la fontion animal = fonction cage
+-- TODO: Vérifier la présence d'un gardien
+CREATE OR REPLACE TRIGGER ajout_maladie_animal
+AFTER INSERT ON LesMaladies
+DECLARE NouveauNomAnimal VARCHAR(20);
+BEGIN 
+    NouveauNomAnimal := :NEW.nomA;
+    LesAnimaux nb_maladies = nb_maladies + 1 LesAnimaux
+    WHERE nomA = NouveauNomAnimal;
+END;
+/
+
 insert into LesCages values (11 ,  'fauve'           , 10 );
 insert into LesCages values (1     , 'fosse'         , 1 );
 insert into LesCages values (2     , 'aquarium'      , 1 );
