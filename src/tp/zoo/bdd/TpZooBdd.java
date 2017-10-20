@@ -21,6 +21,8 @@ public class TpZooBdd {
     // --------------------------------------------- //
     // ---------- CHANGER FONCTION CAGE ------------ //
     public static void changerFonctionCage(){
+        //TODO: est-ce que la cage doit être vide pour changer sa
+        // fonction ?
         int noCageChoisi = obtenirInt("le numéro de la cage à changer");
         int noCageResultat = -1;
         PreparedStatement pstmt = null;
@@ -50,7 +52,7 @@ public class TpZooBdd {
                 System.out.println("La cage "+noCageChoisi+" a pour nouvelle fonction " + fonction);
             }
             else{
-                System.out.println(" La cage n'existe pas !");
+                System.out.println("La cage " + noCageChoisi + " n'existe pas !");
                 pstmt.cancel();
             }
 
@@ -95,7 +97,7 @@ public class TpZooBdd {
             System.out.println("nomA\tsexe\ttype_an\tfonction_cage\tpays\tanNais\tnoCage\tnb_maladies");
             while (result.next()){
                 System.out.println("");
-                System.out.print((result.getString(1)) + "\t");
+                System.out.print(result.getString(1) + "\t");
                 System.out.print(result.getString(2) + "\t");
                 System.out.print(result.getString(3) + "\t");
                 System.out.print(result.getString(4) + "\t");
@@ -166,7 +168,7 @@ public class TpZooBdd {
 
             }catch (SQLException e){
                 if (e instanceof SQLIntegrityConstraintViolationException){
-                    System.out.println("Erreur à l'ajout : l'animal doit être né après 1900 inclus et ne peut être que de sexe male, femelle ou hermaphrodite.");
+                    System.out.println("Erreur(s) à l'ajout :\nLa cage doit être libre.\nL'animal doit être né après 1900 inclus et ne peut être que de sexe male, femelle ou hermaphrodite.\nLe numéro de la cage doit être compris entre 1 et 999.");
                 }else {
                     System.out.println("Erreur à la préparation du statement.");
                     afficherException(e);
@@ -191,41 +193,46 @@ public class TpZooBdd {
             pstmt = conn.prepareStatement("SELECT noCage, fonction_cage FROM LesAnimaux WHERE nomA = ?");
             pstmt.setString(1, nomA);
             result = pstmt.executeQuery();
-            result.next();
-            noCage = result.getInt(1);
-            fonction = result.getString(2);
+            if (result.next()){
+                noCage = result.getInt(1);
+                fonction = result.getString(2);
+                // Récupération des cage compatible avec l'annimal
+                pstmt = conn.prepareStatement("SELECT * FROM LesCages WHERE fonction = ? AND noCage != ?");
+                pstmt.setString(1, fonction);
+                pstmt.setInt(2, noCage);
+                result = pstmt.executeQuery();
+                System.out.println("noCage\tfonction\tnoAlle");
+                while(result.next()){
+                    System.out.print((result.getInt(1)) + "\t");
+                    System.out.print(result.getString(2) + "\t");
+                    System.out.print(result.getInt(3) + "\t");
+                    isEmpty = false;
+                }
+                System.out.println("\n");
 
-            // Récupération des cage compatible avec l'annimal
-            pstmt = conn.prepareStatement("SELECT * FROM LesCages WHERE fonction = ? AND noCage != ?");
-            pstmt.setString(1, fonction);
-            pstmt.setInt(2, noCage);
-            result = pstmt.executeQuery();
-            System.out.println("noCage\tfonction\tnoAlle");
-            while(result.next()){
-                System.out.print((result.getInt(1)) + "\t");
-                System.out.print(result.getString(2) + "\t");
-                System.out.print(result.getInt(3) + "\t");
-                isEmpty = false;
-            }
-            System.out.println("\n");
 
+                if(isEmpty){
+                    System.out.println("Déplacement impossible, pas de cage correspondante");
+                    pstmt.cancel();
+                }
+                else{
+                    // Mise à jour de la cage de l'annimal
+                    noCage = obtenirInt("la cage ou déplacer l'animal ?");
+                    pstmt = conn.prepareStatement("UPDATE LesAnimaux SET noCage = ? WHERE nomA = ?");
+                    pstmt.setInt(1, noCage);
+                    pstmt.setString(2, nomA);
+                    pstmt.executeUpdate();
 
-            if(isEmpty){
-                System.out.println("Déplacement impossible, pas de cage correspondante");
+                    conn.commit();
+
+                    System.out.println("Animal déplacé avec succès.");
+                }
+
+            } else {
                 pstmt.cancel();
+                System.out.println("Aucune cage n'a été trouvé.\n");
             }
-            else{
-                // Mise à jour de la cage de l'annimal
-                noCage = obtenirInt("la cage ou déplacer l'animal ?");
-                pstmt = conn.prepareStatement("UPDATE LesAnimaux SET noCage = ? WHERE nomA = ?");
-                pstmt.setInt(1, noCage);
-                pstmt.setString(2, nomA);
-                pstmt.executeUpdate();
 
-                conn.commit();
-
-                System.out.println("Animal déplacé avec succès.");
-            }
 
         }catch (SQLException e){
             System.out.println("Erreur à la préparation du statement.");
@@ -366,9 +373,12 @@ public class TpZooBdd {
                         changerFonctionCage();
                         break;
                     case 3:
+                        afficherCages();
                         ajouterNouvelAnimal();
                         break;
                     case 4:
+                        afficherCages();
+                        afficherAnimaux();
                         deplacerAnimalVersCage();
                         break;
                     case 5:
