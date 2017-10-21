@@ -160,13 +160,14 @@ FOR EACH ROW
 
 CREATE OR REPLACE TRIGGER verifier_fonction_cage
 	AFTER INSERT OR UPDATE ON LesAnimaux
-	fonction_cage VARCHAR(20);
     FOR EACH ROW
+    DECLARE
+	fonction_cage VARCHAR(20);
         BEGIN
         SELECT fonction INTO fonction_cage
         FROM LesCages
         WHERE noCage = :NEW.noCage;
-        IF (:NEW.fonction != fonction_cage)
+        IF (:NEW.fonction != fonction_cage) THEN
         raise_application_error('La fonction de la cage doit correspondre à l\'animal.');
         END IF;
         END;
