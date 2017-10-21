@@ -128,10 +128,7 @@ create table LesHistoiresAff (
     insert into LesMaladies values ('Milou'         , 'angine' );
     insert into LesMaladies values ('Chloe'         , 'grippe' );
 
--- TODO: inc/dec les maladies de chaque animal à chaque modif
--- TODO: Vérifier la fontion animal = fonction cage
--- TODO: Vérifier la présence d'un gardien
-
+-- inc/dec les maladies de chaque animal à chaque modif
 CREATE OR REPLACE TRIGGER ajout_maladie_animal
 AFTER INSERT ON LesMaladies
 FOR EACH ROW
@@ -157,3 +154,26 @@ FOR EACH ROW
                  UPDATE LesAnimaux SET nb_maladies = nb_maladies - 1 WHERE nomA = :OLD.nomA;
              END;
              /
+             
+
+-- TODO: Vérifier la fontion animal = fonction cage
+
+CREATE OR REPLACE TRIGGER verifier_fonction_cage
+	AFTER INSERT OR UPDATE ON LesAnimaux
+	fonction_cage VARCHAR(20);
+    FOR EACH ROW
+        BEGIN
+        SELECT fonction INTO fonction_cage
+        FROM LesCages
+        WHERE noCage = :NEW.noCage;
+        IF (:NEW.fonction != fonction_cage)
+        raise_application_error('La fonction de la cage doit correspondre à l\'animal.');
+        END IF;
+        END;
+     /
+             
+
+
+-- TODO: Vérifier la présence d'un gardien
+
+
