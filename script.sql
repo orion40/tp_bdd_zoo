@@ -158,23 +158,43 @@ FOR EACH ROW
 
 -- TODO: Vérifier la fontion animal = fonction cage
 
-CREATE OR REPLACE TRIGGER verifier_fonction_cage
-	AFTER INSERT OR UPDATE ON LesAnimaux
-    FOR EACH ROW
-    DECLARE
-	fonction_cage VARCHAR(20);
-        BEGIN
-        SELECT fonction INTO fonction_cage
-        FROM LesCages
-        WHERE noCage = :NEW.noCage;
-        IF (:NEW.fonction != fonction_cage) THEN
-        raise_application_error('La fonction de la cage doit correspondre à l\'animal.');
-        END IF;
-        END;
-     /
-             
+-- CREATE OR REPLACE TRIGGER verifier_fonction_cage
+-- AFTER INSERT OR UPDATE ON LesAnimaux
+-- FOR EACH ROW
+--     DECLARE
+--     fonction_cage VARCHAR(20);
+--     fonction_animal VARCHAR(20);
+--     BEGIN
+--         fonction_animal = :OLD.fonction;
+--         SELECT fonction INTO fonction_cage
+--         FROM LesCages
+--         WHERE noCage = :OLD.noCage;
+--         IF (fonction_animal != fonction_cage) THEN
+--             raise_application_error(-20010 , 'La fonction de la cage doit correspondre à l\'animal.');
+--         END IF;
+--     END;
+--     /
+
+    -- TODO: Vérifier la présence d'un gardien
 
 
--- TODO: Vérifier la présence d'un gardien
+    CREATE OR REPLACE TRIGGER CAGE_ANIMAL_GARDEE
+    BEFORE INSERT OR UPDATE -- avant mise à jour
+    ON LesAnimaux -- sur la table LesAnimaux
+    FOR EACH ROW  -- pour chaque ligne
+        DECLARE
+        gardien VARCHAR(20);
+        Begin
+            gardien := NULL;
+            SELECT nomE INTO gardien
+            FROM LesGardiens
+            WHERE NoCage = :NEW.NoCage;
 
+            If gardien = NULL
+                 Then-- Resultat du select vide
+                -- Créer l'erreur
+                raise_application_error(-20010, 'Pas de gardiens pour cette cage, transaction impossible');
+            End if;
 
+        End ;
+        /
